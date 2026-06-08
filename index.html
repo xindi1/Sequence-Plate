@@ -29,6 +29,7 @@
     <section class="card"><div class="label">Quality markers</div><div class="tagrow" id="markers"></div></section>
     <section class="card"><div class="grid"><div><div class="label">Portion control</div><select id="portion"><option value="5">5 · Strong control</option><option value="4">4 · Good</option><option value="3" selected>3 · Neutral</option><option value="2">2 · Drifted</option><option value="1">1 · Gorge / loss of control</option></select></div><div><div class="label">Sugar pull after</div><select id="sugar"><option value="5">5 · None</option><option value="4">4 · Low</option><option value="3" selected>3 · Moderate</option><option value="2">2 · Strong</option><option value="1">1 · Very strong</option></select></div><div class="full"><div class="label">Notes</div><textarea id="notes" placeholder="What worked? What sequence would be better next time?"></textarea></div></div></section>
     <section class="card"><div class="score"><div class="ring" id="ring" style="--p:0"><span id="score">0</span></div><div><h2 style="margin:0 0 8px">Sequence Score</h2><p class="muted" id="verdict">Add meal details to score.</p><div class="label" style="margin-top:14px">Order fit</div><div class="meterline"><i id="orderBar"></i></div><div class="label" style="margin-top:14px">Quality fit</div><div class="meterline"><i id="qualityBar"></i></div></div></div></section>
+    <section class="card"><div class="label">Data tools</div><div class="tagrow"><button class="btn small" onclick="exportJSON()">Export JSON</button><button class="btn small" onclick="exportCSV()">Export CSV</button><button class="btn small" onclick="document.getElementById('importFile').click()">Import JSON</button><button class="btn small danger" onclick="clearMeals()">Clear saved</button></div><input id="importFile" type="file" accept="application/json,.json" style="display:none" onchange="importJSON(event)"><p class="muted" id="dataStatus" style="margin:10px 0 0;font-size:13px">Exports include all saved meals stored on this device.</p></section>
     <section class="card"><div class="label">Saved meals</div><div id="entries" class="muted">No saved meals yet.</div></section>
   </div>
   <div class="footer"><div class="bar"><button class="btn primary" onclick="saveMeal()">Save Meal</button><button class="btn" onclick="resetForm()">Reset</button></div></div>
@@ -47,6 +48,60 @@ function calc(){const courses=getCourses(); let orderPts=0; for(let i=0;i<Math.m
 function saveMeal(){const s=calc(); meals.unshift({name:mealName.value||'Untitled meal', dt:dt.value, context:context.value, hunger:hunger.value, notes:notes.value, ...s}); localStorage.setItem('sequencePlateMeals',JSON.stringify(meals)); renderEntries();}
 function renderEntries(){const e=document.getElementById('entries'); if(!meals.length){e.textContent='No saved meals yet.';return} e.innerHTML=meals.slice(0,20).map(m=>`<div class="entry"><h3>${m.name} · ${m.total}</h3><p>${new Date(m.dt).toLocaleString()} · ${m.context} · hunger ${m.hunger}/5</p><p>${m.courses.map(c=>c.type+': '+c.item).join(' → ')}</p><p>${m.notes||''}</p></div>`).join('');}
 function resetForm(){document.getElementById('courses').innerHTML=''; document.querySelectorAll('.tag.on').forEach(x=>x.classList.remove('on')); mealName.value=''; notes.value=''; document.getElementById('portion').value='3'; document.getElementById('sugar').value='3'; init();}
+
+function downloadFile(filename, text, type='application/json'){
+  const blob=new Blob([text],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function safeDateName(){return new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}
+function exportJSON(){
+  const payload={app:'Sequence Plate',version:'3.0',exportedAt:new Date().toISOString(),meals};
+  downloadFile(`sequence-plate-export-${safeDateName()}.json`, JSON.stringify(payload,null,2));
+  setStatus(`Exported ${meals.length} meal${meals.length===1?'':'s'} as JSON.`);
+}
+function csvEscape(v){
+  v = v == null ? '' : String(v);
+  return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+}
+function exportCSV(){
+  const rows=[['name','datetime','context','hunger','score','order_score','quality_score','portion_score','sugar_score','courses','markers','notes']];
+  meals.forEach(m=>rows.push([
+    m.name,m.dt,m.context,m.hunger,m.total,m.orderPts,m.q,m.portion,m.sugar,
+    (m.courses||[]).map(c=>`${c.type}: ${c.item||''}`).join(' > '),
+    (m.on||[]).join('; '),m.notes||''
+  ]));
+  downloadFile(`sequence-plate-export-${safeDateName()}.csv`, rows.map(r=>r.map(csvEscape).join(',')).join('\n'), 'text/csv');
+  setStatus(`Exported ${meals.length} meal${meals.length===1?'':'s'} as CSV.`);
+}
+function importJSON(evt){
+  const file=evt.target.files && evt.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(reader.result);
+      const incoming=Array.isArray(parsed)?parsed:(parsed.meals||[]);
+      if(!Array.isArray(incoming)) throw new Error('No meals array found.');
+      const normalized=incoming.filter(m=>m && typeof m==='object');
+      meals=[...normalized,...meals];
+      localStorage.setItem('sequencePlateMeals',JSON.stringify(meals));
+      renderEntries();
+      setStatus(`Imported ${normalized.length} meal${normalized.length===1?'':'s'}.`);
+    }catch(err){
+      setStatus('Import failed: '+err.message);
+    }finally{evt.target.value='';}
+  };
+  reader.readAsText(file);
+}
+function clearMeals(){
+  if(!confirm('Clear all saved meals on this device? Export first if you want a backup.')) return;
+  meals=[]; localStorage.setItem('sequencePlateMeals','[]'); renderEntries(); setStatus('Cleared saved meals on this device.');
+}
+function setStatus(msg){const el=document.getElementById('dataStatus'); if(el) el.textContent=msg;}
+
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js')}
 init();
 </script>
