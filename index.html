@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Sequence Plate v6</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Sequence Plate v6</p>
+        <h1>Meal Decision Architecture</h1>
+        <p class="sub">Anchor → Expand → Reinforce → Sweet → Drink</p>
+      </div>
+      <button id="installBtn" class="ghost hidden">Install</button>
+    </header>
+
+    <section class="card stats">
+      <div><span id="avgScore">—</span><label>Avg Score</label></div>
+      <div><span id="avgCravings">—</span><label>Avg Cravings</label></div>
+      <div><span id="mealCount">0</span><label>Meals</label></div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2 id="formTitle">New Meal</h2>
+        <button id="cancelEditBtn" class="ghost hidden">Cancel edit</button>
+      </div>
+
+      <div class="grid">
+        <label>Meal name<input id="name" placeholder="Breakfast, Dinner, Recovery Snack"></label>
+        <label>Date / time<input id="dt" type="datetime-local"></label>
+        <label>Context
+          <select id="context">
+            <option>Normal meal</option><option>Post-workout</option><option>High hunger</option>
+            <option>Snack</option><option>Recovery Meal</option><option>Social meal</option>
+          </select>
+        </label>
+        <label>Hunger before
+          <select id="hunger"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+        </label>
+      </div>
+
+      <details class="guide">
+        <summary>Function guide</summary>
+        <p><b>Anchor</b> stabilizes the meal. <b>Expand</b> adds light volume. <b>Reinforce</b> adds fiber/satiety. <b>Sweet</b> includes fruit, starch, dessert, or alcohol. <b>Drink</b> is the beverage.</p>
+      </details>
+
+      <div class="compact-head">
+        <span>#</span><span>Item</span><span>Function</span><span></span>
+      </div>
+      <div id="rows" class="rows"></div>
+      <button id="addRowBtn" class="secondary">+ Add function</button>
+
+      <div class="grid outcomes">
+        <label>Satiety after<select id="satiety"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label>Energy after<select id="energy"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label>Sweet cravings after<select id="cravings"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+      </div>
+
+      <label>Notes<textarea id="notes" placeholder="What happened after the meal?"></textarea></label>
+
+      <div class="scorebox">
+        <span id="liveScore">—</span>
+        <div>
+          <b>Meal Effectiveness</b>
+          <p id="scoreExplain">Add functions to score.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="saveBtn">Save meal</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>Data</h2>
+      </div>
+      <div class="actions wrap">
+        <button id="exportJsonBtn" class="secondary">Export JSON</button>
+        <button id="exportCsvBtn" class="secondary">Export CSV</button>
+        <label class="importBtn">Import JSON<input id="importFile" type="file" accept=".json,application/json"></label>
+        <button id="clearBtn" class="danger">Clear saved data</button>
+      </div>
+    </section>
+
+    <section id="ledger" class="ledger"></section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
