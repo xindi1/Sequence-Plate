@@ -13,16 +13,19 @@
     <header class="hero">
       <p class="eyebrow">Decision Architecture Tool</p>
       <h1>Sequence Plate</h1>
-      <p class="sub">Build meal structures that reduce willpower demand. Anchor → Expansion → Reinforcement → Sweet → Beverage.</p>
+      <p class="sub">Build meal structures that reduce willpower demand. Anchor → Expand → Reinforce → Sweet → Drink.</p>
     </header>
 
     <section class="card form-card">
-      <div class="row two">
+      <div class="row three top-grid">
         <label>Meal name
           <input id="mealName" placeholder="Breakfast / lunch / dinner" />
         </label>
-        <label>Date / time
-          <input id="mealDate" type="datetime-local" />
+        <label>Date
+          <input id="mealDate" type="date" />
+        </label>
+        <label>Time
+          <input id="mealTime" type="time" />
         </label>
       </div>
       <div class="row two">
@@ -41,7 +44,7 @@
 
     <section class="card">
       <h2>Functions consumed in order</h2>
-      <p class="hint">Use the function the item served in the meal, not only its macro category.</p>
+      <details class="function-guide"><summary>Function guide</summary><p class="hint">Use the role the food played: Anchor stabilizes, Expand adds volume, Reinforce adds fiber/satiety, Sweet covers fruit or dessert, Drink covers beverages.</p></details>
       <div id="courses"></div>
       <button class="soft" id="addCourse">+ Add function</button>
     </section>
