@@ -1,0 +1,519 @@
+{
+  "app": "Sequence Plate",
+  "version": "7.0",
+  "model": "entry-type-aware-decision-architecture",
+  "exportedAt": "2026-06-10T02:24:20.894Z",
+  "migration": {
+    "sourceVersion": "3.0",
+    "typeMap": {
+      "Protein": "Anchor",
+      "Fat": "Anchor",
+      "Light vegetable": "Expand",
+      "Heavy vegetable": "Reinforce",
+      "Fruit": "Sweet",
+      "Carbohydrate": "Sweet",
+      "Dessert": "Sweet",
+      "Alcohol": "Sweet",
+      "Beverage": "Drink"
+    },
+    "note": "Standalone beverages are migrated as Beverage entries. Meal beverages are preserved but excluded from meal structure scoring."
+  },
+  "meals": [
+    {
+      "id": "m_20260609T1800Dinne",
+      "entryType": "Meal",
+      "name": "Dinner",
+      "dt": "2026-06-09T18:00",
+      "context": "High hunger",
+      "hunger": "4",
+      "notes": "",
+      "functions": [
+        {
+          "item": "Ground beef",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Salad",
+          "type": "Expand",
+          "legacyType": "Light vegetable"
+        },
+        {
+          "item": "Carrots + kale",
+          "type": "Reinforce",
+          "legacyType": "Heavy vegetable"
+        },
+        {
+          "item": "Strawberries",
+          "type": "Sweet",
+          "legacyType": "Fruit"
+        }
+      ],
+      "beverages": [
+        {
+          "item": "Gatorade with ice",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Gatorade with ice",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 87,
+        "orderPts": 80,
+        "quality": 78,
+        "portion": 100,
+        "sugar": 100,
+        "markers": [
+          "protein anchor",
+          "fiber present",
+          "vegetable volume",
+          "whole food base"
+        ]
+      }
+    },
+    {
+      "id": "m_20260609T1700Early",
+      "entryType": "Beverage",
+      "name": "Early Evening Matcha",
+      "dt": "2026-06-09T17:00",
+      "context": "High hunger",
+      "hunger": "4",
+      "notes": "",
+      "functions": [],
+      "beverages": [
+        {
+          "item": "Matcha powder + honey + coconut milk",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Matcha powder + honey + coconut milk",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 83,
+        "orderPts": 88,
+        "quality": 50,
+        "portion": 100,
+        "sugar": 100,
+        "markers": []
+      }
+    },
+    {
+      "id": "m_20260609T1100Brunc",
+      "entryType": "Meal",
+      "name": "Brunch",
+      "dt": "2026-06-09T11:00",
+      "context": "Normal meal",
+      "hunger": "1",
+      "notes": "",
+      "functions": [
+        {
+          "item": "Bloody Mary",
+          "type": "Sweet",
+          "legacyType": "Alcohol"
+        },
+        {
+          "item": "Bacon",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Sweet Potato pancakes",
+          "type": "Sweet",
+          "legacyType": "Carbohydrate"
+        }
+      ],
+      "beverages": [],
+      "beverage": "",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 58,
+        "orderPts": 56,
+        "quality": 20,
+        "portion": 80,
+        "sugar": 100,
+        "markers": [
+          "high sugar",
+          "alcohol",
+          "ultra-processed"
+        ]
+      }
+    },
+    {
+      "id": "m_20260609T0830Break",
+      "entryType": "Meal",
+      "name": "Breakfast",
+      "dt": "2026-06-09T08:30",
+      "context": "Normal meal",
+      "hunger": "2",
+      "notes": "Took supplements during heavy vegetables \u2014 omega-3, CoQ10, d3, methyl folate ",
+      "functions": [
+        {
+          "item": "1 chicken wing",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Salad",
+          "type": "Expand",
+          "legacyType": "Light vegetable"
+        },
+        {
+          "item": "Carrots + kale",
+          "type": "Reinforce",
+          "legacyType": "Heavy vegetable"
+        },
+        {
+          "item": "Strawberries",
+          "type": "Sweet",
+          "legacyType": "Fruit"
+        }
+      ],
+      "beverages": [
+        {
+          "item": "Coffee",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Coffee",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 85,
+        "orderPts": 80,
+        "quality": 71,
+        "portion": 100,
+        "sugar": 100,
+        "markers": [
+          "fiber present",
+          "vegetable volume",
+          "whole food base"
+        ]
+      }
+    },
+    {
+      "id": "m_20260608T2035Snack",
+      "entryType": "Meal",
+      "name": "Snack",
+      "dt": "2026-06-08T20:35",
+      "context": "High hunger",
+      "hunger": "4",
+      "notes": "",
+      "functions": [
+        {
+          "item": "1 chicken wing",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Zucchini",
+          "type": "Reinforce",
+          "legacyType": "Heavy vegetable"
+        },
+        {
+          "item": "Greek yogurt",
+          "type": "Anchor",
+          "legacyType": "Fat"
+        },
+        {
+          "item": "Homemade popcorn",
+          "type": "Sweet",
+          "legacyType": "Carbohydrate"
+        }
+      ],
+      "beverages": [
+        {
+          "item": "Gatorade",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Gatorade",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 68,
+        "orderPts": 68,
+        "quality": 78,
+        "portion": 60,
+        "sugar": 60,
+        "markers": [
+          "protein anchor",
+          "fiber present",
+          "hydrated",
+          "whole food base"
+        ]
+      }
+    },
+    {
+      "id": "m_20260608T1927Eveni",
+      "entryType": "Beverage",
+      "name": "Evening Tea",
+      "dt": "2026-06-08T19:27",
+      "context": "Post-workout",
+      "hunger": "2",
+      "notes": "",
+      "functions": [],
+      "beverages": [
+        {
+          "item": "Matcha powder + coconut milk",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Matcha powder + coconut milk",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 82,
+        "orderPts": 100,
+        "quality": 57,
+        "portion": 80,
+        "sugar": 80,
+        "markers": [
+          "hydrated"
+        ]
+      }
+    },
+    {
+      "id": "m_20260608T1715Dinne",
+      "entryType": "Meal",
+      "name": "Dinner",
+      "dt": "2026-06-08T17:15",
+      "context": "Normal meal",
+      "hunger": "3",
+      "notes": "",
+      "functions": [
+        {
+          "item": "1 chicken wing",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Salad w/h black beans",
+          "type": "Expand",
+          "legacyType": "Light vegetable"
+        },
+        {
+          "item": "Carrots, kale, tomatoes, et al",
+          "type": "Reinforce",
+          "legacyType": "Heavy vegetable"
+        },
+        {
+          "item": "Strawberries",
+          "type": "Sweet",
+          "legacyType": "Fruit"
+        }
+      ],
+      "beverages": [
+        {
+          "item": "Water",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Water",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 90,
+        "orderPts": 80,
+        "quality": 92,
+        "portion": 100,
+        "sugar": 100,
+        "markers": [
+          "protein anchor",
+          "fiber present",
+          "vegetable volume",
+          "carb last",
+          "hydrated",
+          "whole food base"
+        ]
+      }
+    },
+    {
+      "id": "m_20260608T1520Lunch",
+      "entryType": "Meal",
+      "name": "Lunch",
+      "dt": "2026-06-08T15:20",
+      "context": "Post-workout",
+      "hunger": "3",
+      "notes": "",
+      "functions": [
+        {
+          "item": "2 chicken wings",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Salad",
+          "type": "Expand",
+          "legacyType": "Light vegetable"
+        },
+        {
+          "item": "Zucchini + other veggies",
+          "type": "Reinforce",
+          "legacyType": "Heavy vegetable"
+        },
+        {
+          "item": "4-5 strawberries",
+          "type": "Sweet",
+          "legacyType": "Fruit"
+        },
+        {
+          "item": "Chocolate chip cookie",
+          "type": "Sweet",
+          "legacyType": "Dessert"
+        }
+      ],
+      "beverages": [
+        {
+          "item": "2% milk",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "2% milk",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 82,
+        "orderPts": 60,
+        "quality": 92,
+        "portion": 100,
+        "sugar": 100,
+        "markers": [
+          "protein anchor",
+          "fiber present",
+          "vegetable volume",
+          "carb last",
+          "dessert contained",
+          "post-workout fit",
+          "whole food base"
+        ]
+      }
+    },
+    {
+      "id": "m_20260608T0915Break",
+      "entryType": "Meal",
+      "name": "Breakfast",
+      "dt": "2026-06-08T09:15",
+      "context": "Normal meal",
+      "hunger": "3",
+      "notes": "",
+      "functions": [
+        {
+          "item": "2 chicken wings",
+          "type": "Anchor",
+          "legacyType": "Protein"
+        },
+        {
+          "item": "Salad",
+          "type": "Expand",
+          "legacyType": "Light vegetable"
+        },
+        {
+          "item": "Zucchini + other veggies",
+          "type": "Reinforce",
+          "legacyType": "Heavy vegetable"
+        },
+        {
+          "item": "Chocolate chip cookie",
+          "type": "Sweet",
+          "legacyType": "Carbohydrate"
+        }
+      ],
+      "beverages": [
+        {
+          "item": "Coffee",
+          "type": "Beverage",
+          "legacyType": "Beverage"
+        }
+      ],
+      "beverage": "Coffee",
+      "beveragePurpose": "",
+      "addedSugar": "",
+      "caloric": "",
+      "proteinBeverage": "",
+      "outcomes": {
+        "satiety": "",
+        "energy": "",
+        "cravings": ""
+      },
+      "legacy": {
+        "total": 95,
+        "orderPts": 100,
+        "quality": 78,
+        "portion": 100,
+        "sugar": 100,
+        "markers": [
+          "protein anchor",
+          "fiber present",
+          "vegetable volume",
+          "whole food base"
+        ]
+      }
+    }
+  ]
+}

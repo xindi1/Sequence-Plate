@@ -1,0 +1,10 @@
+{
+  "name": "Sequence Plate",
+  "short_name": "SeqPlate",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#0f172a",
+  "description": "Meal and beverage decision architecture tracker.",
+  "icons": []
+}
