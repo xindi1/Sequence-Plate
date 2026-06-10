@@ -1,1 +1,10 @@
-{"name":"Sequence Plate","short_name":"Sequence Plate","start_url":"./index.html","display":"standalone","background_color":"#eef7f5","theme_color":"#16785f","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml"}]}
+{
+  "name": "Sequence Plate",
+  "short_name": "SeqPlate",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#0f172a",
+  "description": "Function-based meal decision architecture tracker.",
+  "icons": []
+}

@@ -1,39 +1,225 @@
-const KEY='sequencePlateV4.meals';
-const ideal=['Anchor','Expand','Reinforce','Sweet','Drink'];
-const types=['Anchor','Expand','Reinforce','Sweet','Drink','Optional','Alcohol','Other'];
-let meals=JSON.parse(localStorage.getItem(KEY)||'[]');
-let editingId=null;
-const $=id=>document.getElementById(id);
-function nowLocalParts(){const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); const iso=d.toISOString(); return {date:iso.slice(0,10), time:iso.slice(11,16), datetime:iso.slice(0,16)}}
-function nowLocal(){return nowLocalParts().datetime}
-function splitDateTime(dt){ if(!dt) return nowLocalParts(); const clean=dt.includes('T')?dt:nowLocal(); return {date:clean.slice(0,10), time:clean.slice(11,16)||nowLocalParts().time, datetime:clean.slice(0,16)} }
-function joinDateTime(){ const p=nowLocalParts(); return `${$('mealDate').value||p.date}T${$('mealTime').value||p.time}`; }
-function init(){ const p=nowLocalParts(); $('mealDate').value=p.date; $('mealTime').value=p.time; addDefaultCourses(); bind(); render(); scoreLive(); if('serviceWorker'in navigator) navigator.serviceWorker.register('service-worker.js'); }
-function addDefaultCourses(){ $('courses').innerHTML=''; ideal.forEach((t,i)=>addCourse('',t)); }
-function addCourse(item='',type='Anchor'){ const wrap=document.createElement('div'); wrap.className='course'; wrap.innerHTML=`<span class="num"></span><input class="item" placeholder="item(s)" value="${escapeHtml(item)}"><select class="type">${types.map(x=>`<option ${x===type?'selected':''}>${x}</option>`).join('')}</select><button class="x" title="Remove">×</button>`; $('courses').appendChild(wrap); renumber(); wrap.querySelector('.x').onclick=()=>{wrap.remove();renumber();scoreLive()}; wrap.querySelectorAll('input,select').forEach(el=>el.oninput=scoreLive); }
-function renumber(){[...document.querySelectorAll('.num')].forEach((n,i)=>n.textContent=i+1)}
-function bind(){ $('addCourse').onclick=()=>addCourse('', 'Optional'); ['mealName','mealDate','mealTime','context','hungerBefore','satiety','energy','cravings','notes'].forEach(id=>$(id).addEventListener('input',scoreLive)); $('saveMeal').onclick=saveMeal; $('resetForm').onclick=resetForm; $('exportJson').onclick=exportJson; $('exportCsv').onclick=exportCsv; $('importJson').onclick=()=>$('fileInput').click(); $('fileInput').onchange=importJson; $('clearAll').onclick=clearAll; }
-function collect(){ return { id:editingId||crypto.randomUUID(), name:$('mealName').value.trim()||$('context').value, datetime:joinDateTime(), context:$('context').value, hungerBefore:+$('hungerBefore').value, courses:[...document.querySelectorAll('.course')].map(c=>({item:c.querySelector('.item').value.trim(), type:c.querySelector('.type').value})), outcomes:{satiety:numOrNull($('satiety').value), energy:numOrNull($('energy').value), cravings:numOrNull($('cravings').value)}, notes:$('notes').value.trim()}; }
-function numOrNull(v){return v===''?null:+v}
-function calc(meal){ const filled=meal.courses.filter(c=>c.item||c.type); let order=0; filled.forEach((c,i)=>{ const target=ideal[i]; if(c.type===target) order+=20; else if((target==='Sweet'&&['Optional','Alcohol'].includes(c.type))||(target==='Drink'&&c.type==='Other')) order+=12; else if(ideal.includes(c.type)) order+=8; else order+=5; }); order=Math.min(100, Math.round(order/(ideal.length*20)*100)); let outcome=50, count=0; const o=meal.outcomes||{}; if(o.satiety){outcome+= (o.satiety-3)*10; count++} if(o.energy){outcome+= (o.energy-3)*8; count++} if(o.cravings){outcome+= (3-o.cravings)*12; count++} outcome=count?Math.max(0,Math.min(100,Math.round(outcome))):50; const score=Math.round(order*.75 + outcome*.25); return {score,order,outcome}; }
-function scoreLive(){ const s=calc(collect()); $('score').textContent=s.score; $('orderBar').style.width=s.order+'%'; $('outcomeBar').style.width=s.outcome+'%'; $('scoreText').textContent=s.score>=90?'Strong structure. Likely supports satiety and decision quality.':s.score>=75?'Good structure. Minor optimization available.':s.score>=60?'Usable structure. Consider anchoring earlier or improving outcomes.':'Low support. Sequence may increase willpower demand.'; }
-function saveMeal(){ const meal=collect(); const s=calc(meal); meal.score=s.score; meal.order=s.order; meal.outcome=s.outcome; meal.updatedAt=new Date().toISOString(); const idx=meals.findIndex(m=>m.id===meal.id); if(idx>=0) meals[idx]=meal; else meals.unshift(meal); persist(); resetForm(); render(); }
-function resetForm(){ editingId=null; $('saveMeal').textContent='Save Meal'; $('mealName').value=''; { const p=nowLocalParts(); $('mealDate').value=p.date; $('mealTime').value=p.time; } $('context').value='Breakfast'; $('hungerBefore').value='3'; $('satiety').value=''; $('energy').value=''; $('cravings').value=''; $('notes').value=''; addDefaultCourses(); scoreLive(); scrollTo({top:0,behavior:'smooth'}); }
-function editMeal(id){ const m=meals.find(x=>x.id===id); if(!m)return; editingId=id; $('saveMeal').textContent='Update Meal'; $('mealName').value=m.name||''; { const p=splitDateTime(m.datetime); $('mealDate').value=p.date; $('mealTime').value=p.time; } $('context').value=m.context||'Breakfast'; $('hungerBefore').value=m.hungerBefore||3; $('satiety').value=m.outcomes?.satiety??''; $('energy').value=m.outcomes?.energy??''; $('cravings').value=m.outcomes?.cravings??''; $('notes').value=m.notes||''; $('courses').innerHTML=''; (m.courses||[]).forEach(c=>addCourse(c.item,c.type)); scoreLive(); scrollTo({top:0,behavior:'smooth'}); }
-function duplicateMeal(id){ const m=structuredClone(meals.find(x=>x.id===id)); if(!m)return; m.id=crypto.randomUUID(); m.name=(m.name||'Meal')+' copy'; m.datetime=nowLocal(); const s=calc(m); Object.assign(m,s,{updatedAt:new Date().toISOString()}); meals.unshift(m); persist(); render(); }
-function deleteMeal(id){ if(confirm('Delete this meal?')){meals=meals.filter(m=>m.id!==id); persist(); render();} }
-function persist(){ localStorage.setItem(KEY,JSON.stringify(meals)); }
-function render(){ renderDashboard(); const groups=groupByDay(meals); $('mealGroups').innerHTML=Object.entries(groups).map(([day,items])=>`<div class="day"><div class="day-head"><h3>${day}</h3><strong>${avg(items.map(x=>x.score))}</strong></div>${items.map(mealHtml).join('')}</div>`).join('')||'<p class="hint">No saved meals yet.</p>'; }
-function mealHtml(m){ const seq=(m.courses||[]).filter(c=>c.item||c.type).map(c=>`${c.type}: ${escapeHtml(c.item||'—')}`).join(' → '); return `<article class="meal"><h3>${escapeHtml(m.name)} · ${m.score}</h3><p>${fmt(m.datetime)} · ${escapeHtml(m.context)} · hunger ${m.hungerBefore}/5</p><p>${seq}</p>${m.notes?`<p>${escapeHtml(m.notes)}</p>`:''}<div class="meal-actions"><button class="soft" onclick="editMeal('${m.id}')">Edit</button><button class="soft" onclick="duplicateMeal('${m.id}')">Duplicate</button><button class="danger" onclick="deleteMeal('${m.id}')">Delete</button></div></article>`; }
-function renderDashboard(){ $('avgScore').textContent=meals.length?avg(meals.map(m=>m.score)):'—'; const cravings=meals.map(m=>m.outcomes?.cravings).filter(Boolean); const sat=meals.map(m=>m.outcomes?.satiety).filter(Boolean); $('avgCraving').textContent=cravings.length?avg(cravings):'—'; $('avgSatiety').textContent=sat.length?avg(sat):'—'; $('bestPattern').textContent=bestPattern(); }
-function bestPattern(){ if(meals.length<3)return 'Save at least three meals to identify your best sequence pattern.'; const map={}; meals.forEach(m=>{const p=(m.courses||[]).map(c=>c.type).slice(0,5).join(' → '); if(!map[p])map[p]=[]; map[p].push(m.score);}); const best=Object.entries(map).sort((a,b)=>avg(b[1])-avg(a[1]))[0]; return `Best pattern so far: ${best[0]} · avg ${avg(best[1])}`; }
-function groupByDay(list){ return list.reduce((a,m)=>{const d=new Date(m.datetime); const k=d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}); (a[k]??=[]).push(m); return a;},{}); }
-function fmt(dt){ return new Date(dt).toLocaleString([], {month:'numeric',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }
-function avg(arr){return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length)}
-function exportJson(){download('sequence-plate-export.json',JSON.stringify(meals,null,2),'application/json')}
-function exportCsv(){ const rows=[['name','datetime','context','hungerBefore','score','order','outcome','satiety','energy','cravings','sequence','notes']]; meals.forEach(m=>rows.push([m.name,m.datetime,m.context,m.hungerBefore,m.score,m.order,m.outcome,m.outcomes?.satiety??'',m.outcomes?.energy??'',m.outcomes?.cravings??'',(m.courses||[]).map(c=>`${c.type}: ${c.item}`).join(' -> '),m.notes||''])); download('sequence-plate-export.csv',rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'),'text/csv') }
-function download(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
-function importJson(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{try{const data=JSON.parse(r.result); if(!Array.isArray(data))throw Error(); meals=data; persist(); render(); alert('Import complete.')}catch{alert('Import failed. Use a Sequence Plate JSON export.')}}; r.readAsText(f); e.target.value=''; }
-function clearAll(){ if(confirm('Clear all saved meals from this device?')){meals=[];persist();render();} }
-function escapeHtml(s=''){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-init();
+const STORAGE_KEY = "sequence_plate_v6_meals";
+const TYPES = ["Anchor","Expand","Reinforce","Sweet","Drink"];
+const LEGACY_MAP = {"Protein":"Anchor","Fat":"Anchor","Light vegetable":"Expand","Heavy vegetable":"Reinforce","Fruit":"Sweet","Carbohydrate":"Sweet","Dessert":"Sweet","Alcohol":"Sweet","Beverage":"Drink"};
+let meals = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+let editId = null;
+let deferredPrompt = null;
+
+const $ = id => document.getElementById(id);
+const rowsEl = $("rows");
+
+function nowLocal(){
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
+$("dt").value = nowLocal();
+
+function uid(){ return "m_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+function saveStore(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(meals)); render(); }
+
+function addRow(item="", type="Anchor"){
+  const i = rowsEl.children.length + 1;
+  const row = document.createElement("div");
+  row.className = "row";
+  row.innerHTML = `<div class="idx">${i}</div>
+    <input class="item" placeholder="Item(s)" value="${escapeHtml(item)}">
+    <select class="type">${TYPES.map(t=>`<option ${t===type?"selected":""}>${t}</option>`).join("")}</select>
+    <button class="x" type="button">×</button>`;
+  row.querySelector(".x").onclick = () => { row.remove(); renumber(); live(); };
+  row.querySelector(".item").oninput = live;
+  row.querySelector(".type").onchange = live;
+  rowsEl.appendChild(row);
+  live();
+}
+function renumber(){ [...rowsEl.children].forEach((r,idx)=>r.querySelector(".idx").textContent=idx+1); }
+
+function getFunctions(){
+  return [...rowsEl.children].map(r => ({
+    item: r.querySelector(".item").value.trim(),
+    type: r.querySelector(".type").value
+  })).filter(f => f.item);
+}
+
+function scoreMeal(funcs, outcomes={}){
+  if(!funcs.length) return {score:null, explain:"Add functions to score."};
+  const types = funcs.map(f=>f.type);
+  let s = 40;
+  if(types.includes("Anchor")) s += 20;
+  if(types.includes("Expand")) s += 12;
+  if(types.includes("Reinforce")) s += 14;
+  if(types.includes("Sweet")){
+    const firstSweet = types.indexOf("Sweet");
+    const hasAnchorBefore = types.slice(0, firstSweet).includes("Anchor");
+    const hasBufferBefore = types.slice(0, firstSweet).some(t => t==="Expand" || t==="Reinforce");
+    s += hasAnchorBefore ? 8 : -8;
+    s += hasBufferBefore ? 8 : -6;
+  } else {
+    s += 6;
+  }
+  if(types.includes("Drink")){
+    const lastDrink = types[types.length-1] === "Drink";
+    s += lastDrink ? 8 : 0;
+  }
+  const anchorCount = types.filter(t=>t==="Anchor").length;
+  if(anchorCount >= 2) s += 8;
+  const sweetCount = types.filter(t=>t==="Sweet").length;
+  if(sweetCount > 1) s -= (sweetCount-1)*8;
+  const cravings = Number(outcomes.cravings || 0);
+  const satiety = Number(outcomes.satiety || 0);
+  const energy = Number(outcomes.energy || 0);
+  if(cravings) s += (6-cravings)*3 - 6;
+  if(satiety) s += (satiety-3)*4;
+  if(energy) s += (energy-3)*2;
+  s = Math.max(0, Math.min(100, Math.round(s)));
+  let explain = [];
+  if(types.includes("Anchor")) explain.push("anchor present");
+  if(types.includes("Expand") || types.includes("Reinforce")) explain.push("vegetable/fiber buffer");
+  if(types.includes("Sweet")) explain.push("sweet timing scored");
+  if(types[types.length-1]==="Drink") explain.push("drink last");
+  if(anchorCount>=2) explain.push("second anchor credited");
+  return {score:s, explain: explain.join(" • ") || "intentional structure scored"};
+}
+
+function live(){
+  const funcs = getFunctions();
+  const outcomes = {satiety:$("satiety").value, energy:$("energy").value, cravings:$("cravings").value};
+  const r = scoreMeal(funcs, outcomes);
+  $("liveScore").textContent = r.score ?? "—";
+  $("scoreExplain").textContent = r.explain;
+}
+
+function resetForm(){
+  editId=null; $("formTitle").textContent="New Meal"; $("cancelEditBtn").classList.add("hidden");
+  ["name","notes"].forEach(id=>$(id).value=""); $("dt").value=nowLocal();
+  $("context").value="Normal meal"; ["hunger","satiety","energy","cravings"].forEach(id=>$(id).value="");
+  rowsEl.innerHTML=""; addRow(); addRow("", "Expand"); addRow("", "Reinforce"); addRow("", "Sweet"); addRow("", "Drink");
+  live();
+}
+
+function mealFromForm(){
+  const funcs = getFunctions();
+  const outcomes = {satiety:$("satiety").value, energy:$("energy").value, cravings:$("cravings").value};
+  const sc = scoreMeal(funcs, outcomes);
+  return {
+    id: editId || uid(),
+    name: $("name").value.trim() || "Meal",
+    dt: $("dt").value,
+    context: $("context").value,
+    hunger: $("hunger").value,
+    notes: $("notes").value.trim(),
+    functions: funcs,
+    outcomes,
+    score: sc.score,
+    scoreExplain: sc.explain,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function editMeal(id){
+  const m = meals.find(x=>x.id===id); if(!m) return;
+  editId=id; $("formTitle").textContent="Edit Meal"; $("cancelEditBtn").classList.remove("hidden");
+  $("name").value=m.name||""; $("dt").value=(m.dt||nowLocal()).slice(0,16); $("context").value=m.context||"Normal meal";
+  $("hunger").value=m.hunger||""; $("notes").value=m.notes||"";
+  $("satiety").value=m.outcomes?.satiety||""; $("energy").value=m.outcomes?.energy||""; $("cravings").value=m.outcomes?.cravings||"";
+  rowsEl.innerHTML=""; (m.functions||[]).forEach(f=>addRow(f.item, f.type)); if(!rowsEl.children.length) addRow();
+  window.scrollTo({top:0,behavior:"smooth"}); live();
+}
+function duplicateMeal(id){
+  const m = meals.find(x=>x.id===id); if(!m) return;
+  const copy = JSON.parse(JSON.stringify(m)); copy.id=uid(); copy.name=(copy.name||"Meal")+" copy"; copy.dt=nowLocal(); copy.updatedAt=new Date().toISOString();
+  meals.unshift(copy); saveStore();
+}
+function deleteMeal(id){
+  if(confirm("Delete this meal?")){ meals = meals.filter(m=>m.id!==id); saveStore(); }
+}
+
+function render(){
+  meals.sort((a,b)=>String(b.dt).localeCompare(String(a.dt)));
+  $("mealCount").textContent = meals.length;
+  const scores = meals.map(m=>Number(m.score)).filter(n=>!isNaN(n));
+  $("avgScore").textContent = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : "—";
+  const cr = meals.map(m=>Number(m.outcomes?.cravings)).filter(n=>n);
+  $("avgCravings").textContent = cr.length ? (cr.reduce((a,b)=>a+b,0)/cr.length).toFixed(1) : "—";
+
+  const groups = {};
+  for(const m of meals){
+    const day = (m.dt || "Undated").slice(0,10);
+    (groups[day] ||= []).push(m);
+  }
+  $("ledger").innerHTML = Object.entries(groups).map(([day,items])=>{
+    const avg = Math.round(items.reduce((a,m)=>a+(Number(m.score)||0),0)/items.length);
+    return `<div class="day"><div class="dayHead"><span>${day}</span><span>Daily avg ${avg}</span></div>
+      ${items.map(m=>`<article class="meal">
+        <div class="mealTop"><div><h3>${escapeHtml(m.name)}</h3><div class="fn">${escapeHtml(m.context||"")} ${m.hunger?`• hunger ${m.hunger}`:""}</div></div><span class="badge">${m.score ?? "—"}</span></div>
+        <div class="fn">${(m.functions||[]).map(f=>`${escapeHtml(f.item)} <b>${f.type}</b>`).join(" → ")}</div>
+        ${m.notes?`<div class="fn">${escapeHtml(m.notes)}</div>`:""}
+        <div class="mealActions">
+          <button class="secondary" onclick="editMeal('${m.id}')">Edit</button>
+          <button class="secondary" onclick="duplicateMeal('${m.id}')">Duplicate</button>
+          <button class="danger" onclick="deleteMeal('${m.id}')">Delete</button>
+        </div>
+      </article>`).join("")}</div>`;
+  }).join("") || `<section class="card"><p class="sub">No meals yet. Import JSON or save a new meal.</p></section>`;
+}
+
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+
+function normalizeImported(obj){
+  const arr = obj.meals || [];
+  return arr.map(m=>{
+    let funcs = m.functions;
+    if(!funcs && m.courses){
+      funcs = m.courses.filter(c=>c.item && c.item.trim()).map(c=>({item:c.item.trim(), type:LEGACY_MAP[c.type] || c.type || "Anchor", legacyType:c.type}));
+    }
+    funcs = (funcs||[]).filter(f=>f.item).map(f=>({item:f.item, type:LEGACY_MAP[f.type] || f.type || "Anchor", legacyType:f.legacyType}));
+    const outcomes = m.outcomes || {satiety:"",energy:"",cravings:""};
+    const sc = scoreMeal(funcs,outcomes);
+    return {...m, id:m.id||uid(), functions:funcs, outcomes, score:sc.score, scoreExplain:sc.explain};
+  });
+}
+
+$("addRowBtn").onclick = () => addRow();
+$("saveBtn").onclick = () => {
+  const m = mealFromForm();
+  const idx = meals.findIndex(x=>x.id===m.id);
+  if(idx>=0) meals[idx]=m; else meals.unshift(m);
+  saveStore(); resetForm();
+};
+$("resetBtn").onclick = resetForm;
+$("cancelEditBtn").onclick = resetForm;
+
+$("exportJsonBtn").onclick = () => {
+  const payload = {app:"Sequence Plate", version:"6.0", exportedAt:new Date().toISOString(), meals};
+  download("sequence-plate-v6-export.json", JSON.stringify(payload,null,2), "application/json");
+};
+$("exportCsvBtn").onclick = () => {
+  const rows = [["name","dt","context","hunger","score","functions","satiety","energy","cravings","notes"]];
+  meals.forEach(m=>rows.push([m.name,m.dt,m.context,m.hunger,m.score,(m.functions||[]).map(f=>`${f.item}:${f.type}`).join(" > "),m.outcomes?.satiety,m.outcomes?.energy,m.outcomes?.cravings,m.notes]));
+  download("sequence-plate-v6-export.csv", rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n"), "text/csv");
+};
+$("importFile").onchange = e => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const obj = JSON.parse(reader.result);
+      const imported = normalizeImported(obj);
+      meals = [...imported, ...meals];
+      saveStore();
+      alert(`Imported ${imported.length} meals.`);
+    }catch(err){ alert("Import failed: " + err.message); }
+  };
+  reader.readAsText(file);
+};
+$("clearBtn").onclick = () => { if(confirm("Clear all saved meals?")){ meals=[]; saveStore(); } };
+
+function download(name, content, type){
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); deferredPrompt=e; $("installBtn").classList.remove("hidden"); });
+$("installBtn").onclick=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; $("installBtn").classList.add("hidden"); } };
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+
+resetForm(); render();
