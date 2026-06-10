@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sequence Plate</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#16785f" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <p class="eyebrow">Decision Architecture Tool</p>
+      <h1>Sequence Plate</h1>
+      <p class="sub">Build meal structures that reduce willpower demand. Anchor → Expansion → Reinforcement → Sweet → Beverage.</p>
+    </header>
+
+    <section class="card form-card">
+      <div class="row two">
+        <label>Meal name
+          <input id="mealName" placeholder="Breakfast / lunch / dinner" />
+        </label>
+        <label>Date / time
+          <input id="mealDate" type="datetime-local" />
+        </label>
+      </div>
+      <div class="row two">
+        <label>Context
+          <select id="context">
+            <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Recovery meal</option><option>Normal meal</option><option>High hunger</option>
+          </select>
+        </label>
+        <label>Hunger before
+          <select id="hungerBefore">
+            <option value="1">1 · Low</option><option value="2">2 · Mild</option><option value="3" selected>3 · Moderate</option><option value="4">4 · High</option><option value="5">5 · Very high</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Functions consumed in order</h2>
+      <p class="hint">Use the function the item served in the meal, not only its macro category.</p>
+      <div id="courses"></div>
+      <button class="soft" id="addCourse">+ Add function</button>
+    </section>
+
+    <section class="card">
+      <h2>Outcome check</h2>
+      <p class="hint">Best filled 60–120 minutes later. These are optional but make the tool smarter.</p>
+      <div class="row three">
+        <label>Satiety
+          <select id="satiety"><option value="">Not logged</option><option value="1">1 · Low</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Full/stable</option></select>
+        </label>
+        <label>Energy
+          <select id="energy"><option value="">Not logged</option><option value="1">1 · Low</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Strong</option></select>
+        </label>
+        <label>Sweet cravings
+          <select id="cravings"><option value="">Not logged</option><option value="1">1 · None</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5 · Strong</option></select>
+        </label>
+      </div>
+      <label>Notes
+        <textarea id="notes" placeholder="Supplements, timing, unusual factors, observations..."></textarea>
+      </label>
+    </section>
+
+    <section class="score-card card">
+      <div class="score"><span id="score">0</span></div>
+      <div><h2>Sequence Score</h2><p id="scoreText">Add meal functions to score.</p></div>
+      <div class="bars">
+        <span>Order fit</span><b><i id="orderBar"></i></b>
+        <span>Outcome fit</span><b><i id="outcomeBar"></i></b>
+      </div>
+    </section>
+
+    <section class="sticky-actions">
+      <button id="saveMeal">Save Meal</button>
+      <button class="soft" id="resetForm">Reset</button>
+    </section>
+
+    <section class="card dashboard">
+      <h2>Dashboard</h2>
+      <div class="stats">
+        <div><strong id="avgScore">—</strong><span>Avg score</span></div>
+        <div><strong id="avgCraving">—</strong><span>Avg cravings</span></div>
+        <div><strong id="avgSatiety">—</strong><span>Avg satiety</span></div>
+      </div>
+      <p id="bestPattern" class="hint">Save meals to identify your best sequence pattern.</p>
+    </section>
+
+    <section class="card tools">
+      <h2>Data tools</h2>
+      <button class="soft" id="exportJson">Export JSON</button>
+      <button class="soft" id="exportCsv">Export CSV</button>
+      <button class="soft" id="importJson">Import JSON</button>
+      <button class="danger" id="clearAll">Clear saved</button>
+      <input type="file" id="fileInput" accept="application/json" hidden />
+    </section>
+
+    <section class="card">
+      <h2>Saved meals</h2>
+      <div id="mealGroups"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
